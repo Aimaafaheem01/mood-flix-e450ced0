@@ -13,12 +13,26 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ['Bebas Neue', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        mood: {
+          happy: "hsl(var(--mood-happy))",
+          sad: "hsl(var(--mood-sad))",
+          thrilling: "hsl(var(--mood-thrilling))",
+          romantic: "hsl(var(--mood-romantic))",
+          chill: "hsl(var(--mood-chill))",
+          mysterious: "hsl(var(--mood-mysterious))",
+          inspiring: "hsl(var(--mood-inspiring))",
+          scary: "hsl(var(--mood-scary))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
