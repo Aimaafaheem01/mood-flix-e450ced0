@@ -6,9 +6,10 @@ import MovieCard from "./MovieCard";
 interface MovieRowProps {
   title: string;
   movies: Movie[];
+  onMovieClick?: (movie: Movie) => void;
 }
 
-const MovieRow = ({ title, movies }: MovieRowProps) => {
+const MovieRow = ({ title, movies, onMovieClick }: MovieRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: "left" | "right") => {
@@ -40,7 +41,7 @@ const MovieRow = ({ title, movies }: MovieRowProps) => {
           style={{ scrollbarWidth: "none" }}
         >
           {movies.map((movie, i) => (
-            <MovieCard key={movie.id} movie={movie} index={i} />
+            <MovieCard key={movie.id} movie={movie} index={i} onClick={onMovieClick} />
           ))}
         </div>
         <button
