@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { Star, Clock } from "lucide-react";
 import { Movie } from "@/data/movies";
+import { posterMap } from "@/data/posters";
 
 interface MovieCardProps {
   movie: Movie;
   index: number;
+  onClick?: (movie: Movie) => void;
 }
 
 const colorPool = [
@@ -18,8 +20,9 @@ const colorPool = [
   "from-indigo-900/80 to-indigo-950/90",
 ];
 
-const MovieCard = ({ movie, index }: MovieCardProps) => {
+const MovieCard = ({ movie, index, onClick }: MovieCardProps) => {
   const gradient = colorPool[movie.id % colorPool.length];
+  const poster = posterMap[movie.id];
 
   return (
     <motion.div
@@ -27,13 +30,24 @@ const MovieCard = ({ movie, index }: MovieCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
       className="card-netflix group min-w-[200px] w-[200px] sm:w-[220px] flex-shrink-0 cursor-pointer"
+      onClick={() => onClick?.(movie)}
     >
       {/* Poster area */}
-      <div
-        className={`relative aspect-[2/3] bg-gradient-to-br ${gradient} flex items-end p-4`}
-      >
+      <div className="relative aspect-[2/3] overflow-hidden">
+        {poster ? (
+          <img
+            src={poster}
+            alt={movie.title}
+            loading="lazy"
+            width={512}
+            height={768}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-        <div className="relative z-10 w-full">
+        <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
           <h3 className="font-display text-xl leading-tight text-foreground">
             {movie.title}
           </h3>
