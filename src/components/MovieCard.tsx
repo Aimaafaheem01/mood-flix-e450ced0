@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Star, Clock, Heart } from "lucide-react";
 import { Movie } from "@/data/movies";
 import { posterMap } from "@/data/posters";
+import StarRating from "./StarRating";
 
 interface MovieCardProps {
   movie: Movie;
@@ -9,6 +10,8 @@ interface MovieCardProps {
   onClick?: (movie: Movie) => void;
   isInWatchlist?: boolean;
   onToggleWatchlist?: (movieId: number) => void;
+  userRating?: number;
+  onRate?: (movieId: number, score: number) => void;
 }
 
 const colorPool = [
@@ -22,7 +25,7 @@ const colorPool = [
   "from-indigo-900/80 to-indigo-950/90",
 ];
 
-const MovieCard = ({ movie, index, onClick, isInWatchlist, onToggleWatchlist }: MovieCardProps) => {
+const MovieCard = ({ movie, index, onClick, isInWatchlist, onToggleWatchlist, userRating, onRate }: MovieCardProps) => {
   const gradient = colorPool[movie.id % colorPool.length];
   const poster = posterMap[movie.id];
 
