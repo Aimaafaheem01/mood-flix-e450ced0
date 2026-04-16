@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Star, Clock, X, Heart } from "lucide-react";
 import { Movie, movies, moods } from "@/data/movies";
 import { posterMap } from "@/data/posters";
+import StarRating from "./StarRating";
 
 interface MovieDetailModalProps {
   movie: Movie | null;
@@ -10,9 +11,11 @@ interface MovieDetailModalProps {
   onSelectMovie: (movie: Movie) => void;
   isInWatchlist?: boolean;
   onToggleWatchlist?: (movieId: number) => void;
+  userRating?: number;
+  onRate?: (movieId: number, score: number) => void;
 }
 
-const MovieDetailModal = ({ movie, open, onClose, onSelectMovie, isInWatchlist, onToggleWatchlist }: MovieDetailModalProps) => {
+const MovieDetailModal = ({ movie, open, onClose, onSelectMovie, isInWatchlist, onToggleWatchlist, userRating, onRate }: MovieDetailModalProps) => {
   if (!movie) return null;
 
   const poster = posterMap[movie.id];
@@ -88,6 +91,14 @@ const MovieDetailModal = ({ movie, open, onClose, onSelectMovie, isInWatchlist, 
               </span>
             ))}
           </div>
+
+          {/* Your Rating */}
+          {onRate && movie && (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">Your Rating:</span>
+              <StarRating rating={userRating ?? 0} onRate={(s) => onRate(movie.id, s)} size="md" />
+            </div>
+          )}
 
           {/* Description */}
           <p className="text-muted-foreground leading-relaxed">{movie.description}</p>
