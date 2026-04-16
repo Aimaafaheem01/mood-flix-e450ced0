@@ -1,16 +1,18 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Film, Sparkles, Search, X } from "lucide-react";
+import { Film, Sparkles, Search, X, Heart } from "lucide-react";
 import MoodSelector from "@/components/MoodSelector";
 import MovieRow from "@/components/MovieRow";
 import MovieDetailModal from "@/components/MovieDetailModal";
 import MovieCard from "@/components/MovieCard";
 import { movies, moods, Mood, Movie } from "@/data/movies";
+import { useWatchlist } from "@/hooks/use-watchlist";
 
 const Index = () => {
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [detailMovie, setDetailMovie] = useState<Movie | null>(null);
+  const { watchlist, toggle, isInWatchlist } = useWatchlist();
 
   const filteredMovies = useMemo(() => {
     if (!selectedMood) return [];
@@ -27,11 +29,14 @@ const Index = () => {
     );
   }, [searchQuery]);
 
-  const isSearching = searchQuery.trim().length > 0;
+  const watchlistMovies = useMemo(
+    () => movies.filter((m) => watchlist.includes(m.id)),
+    [watchlist]
+  );
 
+  const isSearching = searchQuery.trim().length > 0;
   const selectedMoodData = moods.find((m) => m.id === selectedMood);
 
-  // Group by genre for multiple rows
   const genreGroups = useMemo(() => {
     const map = new Map<string, typeof filteredMovies>();
     filteredMovies.forEach((movie) => {
@@ -91,7 +96,7 @@ const Index = () => {
             {searchResults.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {searchResults.map((movie, i) => (
-                  <MovieCard key={movie.id} movie={movie} index={i} onClick={setDetailMovie} />
+                  <MovieCard key={movie.id} movie={movie} index={i} onClick={setDetailMovie} isInWatchlist={isInWatchlist(movie.id)} onToggleWatchlist={toggle} />
                 ))}
               </div>
             ) : (
@@ -119,6 +124,20 @@ const Index = () => {
             <MoodSelector selectedMood={selectedMood} onSelectMood={setSelectedMood} />
           </section>
 
+          {/* Watchlist */}
+          {watchlistMovies.length > 0 && (
+            <section className="pb-10 px-4 sm:px-8">
+              <div className="container mx-auto">
+                <div className="flex items-center gap-2 mb-4">
+                  <Heart className="w-5 h-5 text-primary fill-primary" />
+                  <h2 className="font-display text-3xl tracking-wide text-foreground">My Watchlist</h2>
+                  <span className="text-sm text-muted-foreground">({watchlistMovies.length})</span>
+                </div>
+                <MovieRow title="" movies={watchlistMovies} onMovieClick={setDetailMovie} isInWatchlist={isInWatchlist} onToggleWatchlist={toggle} />
+              </div>
+            </section>
+          )}
+
           {/* Results */}
           <AnimatePresence mode="wait">
             {selectedMood && (
@@ -140,15 +159,13 @@ const Index = () => {
                   </span>
                 </div>
 
-                {/* Top picks row */}
                 <div className="container mx-auto">
-                  <MovieRow title="Top Picks For You" movies={filteredMovies} onMovieClick={setDetailMovie} />
+                  <MovieRow title="Top Picks For You" movies={filteredMovies} onMovieClick={setDetailMovie} isInWatchlist={isInWatchlist} onToggleWatchlist={toggle} />
                 </div>
 
-                {/* Genre rows */}
                 <div className="container mx-auto space-y-8">
                   {genreGroups.map(([genre, genreMovies]) => (
-                    <MovieRow key={genre} title={genre} movies={genreMovies} onMovieClick={setDetailMovie} />
+                    <MovieRow key={genre} title={genre} movies={genreMovies} onMovieClick={setDetailMovie} isInWatchlist={isInWatchlist} onToggleWatchlist={toggle} />
                   ))}
                 </div>
               </motion.section>
@@ -163,6 +180,8 @@ const Index = () => {
         open={!!detailMovie}
         onClose={() => setDetailMovie(null)}
         onSelectMovie={setDetailMovie}
+        isInWatchlist={detailMovie ? isInWatchlist(detailMovie.id) : false}
+        onToggleWatchlist={toggle}
       />
 
       {/* Footer */}
