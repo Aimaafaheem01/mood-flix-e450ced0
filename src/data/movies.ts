@@ -13,14 +13,14 @@ export interface Movie {
 }
 
 export const moods: { id: Mood; label: string; emoji: string; gradient: string }[] = [
-  { id: 'happy', label: 'Happy', emoji: '😄', gradient: 'from-yellow-500/20 to-orange-500/20' },
-  { id: 'sad', label: 'Melancholy', emoji: '😢', gradient: 'from-blue-500/20 to-indigo-500/20' },
-  { id: 'thrilling', label: 'Thrilling', emoji: '🔥', gradient: 'from-red-600/20 to-orange-600/20' },
-  { id: 'romantic', label: 'Romantic', emoji: '💕', gradient: 'from-pink-500/20 to-rose-500/20' },
-  { id: 'chill', label: 'Chill', emoji: '😌', gradient: 'from-teal-500/20 to-cyan-500/20' },
-  { id: 'mysterious', label: 'Mysterious', emoji: '🔮', gradient: 'from-purple-500/20 to-violet-500/20' },
-  { id: 'inspiring', label: 'Inspiring', emoji: '✨', gradient: 'from-amber-500/20 to-yellow-500/20' },
-  { id: 'scary', label: 'Scary', emoji: '👻', gradient: 'from-gray-700/20 to-gray-900/20' },
+  { id: 'happy', label: 'Happy', emoji: '', gradient: 'from-yellow-500/20 to-orange-500/20' },
+  { id: 'sad', label: 'Melancholy', emoji: '', gradient: 'from-blue-500/20 to-indigo-500/20' },
+  { id: 'thrilling', label: 'Thrilling', emoji: '', gradient: 'from-red-600/20 to-orange-600/20' },
+  { id: 'romantic', label: 'Romantic', emoji: '', gradient: 'from-pink-500/20 to-rose-500/20' },
+  { id: 'chill', label: 'Chill', emoji: '', gradient: 'from-teal-500/20 to-cyan-500/20' },
+  { id: 'mysterious', label: 'Mysterious', emoji: '', gradient: 'from-purple-500/20 to-violet-500/20' },
+  { id: 'inspiring', label: 'Inspiring', emoji: '', gradient: 'from-amber-500/20 to-yellow-500/20' },
+  { id: 'scary', label: 'Scary', emoji: '', gradient: 'from-gray-700/20 to-gray-900/20' },
 ];
 
 export const movies: Movie[] = [

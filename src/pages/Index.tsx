@@ -210,7 +210,7 @@ const Index = () => {
                 <div className="flex items-center gap-3 container mx-auto">
                   <Sparkles className="w-5 h-5 text-primary" />
                   <h2 className="font-display text-3xl tracking-wide text-foreground">
-                    {selectedMoodData?.emoji} {selectedMoodData?.label} Picks
+                    {selectedMoodData?.label} Picks
                   </h2>
                   <span className="text-sm text-muted-foreground">({filteredMovies.length} movies)</span>
                 </div>
