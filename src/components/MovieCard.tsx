@@ -81,6 +81,11 @@ const MovieCard = ({ movie, index, onClick, isInWatchlist, onToggleWatchlist, us
             {movie.duration}
           </span>
         </div>
+        {onRate && (
+          <div className="pt-1">
+            <StarRating rating={userRating ?? 0} onRate={(s) => onRate(movie.id, s)} size="sm" />
+          </div>
+        )}
         <div className="flex flex-wrap gap-1">
           {movie.genres.slice(0, 2).map((g) => (
             <span
