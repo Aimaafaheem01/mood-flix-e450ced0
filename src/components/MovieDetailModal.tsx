@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Star, Clock, X } from "lucide-react";
+import { Star, Clock, X, Heart } from "lucide-react";
 import { Movie, movies, moods } from "@/data/movies";
 import { posterMap } from "@/data/posters";
 
@@ -8,9 +8,11 @@ interface MovieDetailModalProps {
   open: boolean;
   onClose: () => void;
   onSelectMovie: (movie: Movie) => void;
+  isInWatchlist?: boolean;
+  onToggleWatchlist?: (movieId: number) => void;
 }
 
-const MovieDetailModal = ({ movie, open, onClose, onSelectMovie }: MovieDetailModalProps) => {
+const MovieDetailModal = ({ movie, open, onClose, onSelectMovie, isInWatchlist, onToggleWatchlist }: MovieDetailModalProps) => {
   if (!movie) return null;
 
   const poster = posterMap[movie.id];
@@ -32,12 +34,22 @@ const MovieDetailModal = ({ movie, open, onClose, onSelectMovie }: MovieDetailMo
             <div className="w-full h-full bg-gradient-to-br from-primary/30 to-background" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-background/60 backdrop-blur-sm hover:bg-background/80 transition-colors z-20"
-          >
-            <X className="w-5 h-5 text-foreground" />
-          </button>
+          <div className="absolute top-4 right-4 flex gap-2 z-20">
+            {onToggleWatchlist && movie && (
+              <button
+                onClick={() => onToggleWatchlist(movie.id)}
+                className="p-2 rounded-full bg-background/60 backdrop-blur-sm hover:bg-background/80 transition-colors"
+              >
+                <Heart className={`w-5 h-5 transition-colors ${isInWatchlist ? 'fill-primary text-primary' : 'text-foreground'}`} />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full bg-background/60 backdrop-blur-sm hover:bg-background/80 transition-colors"
+            >
+              <X className="w-5 h-5 text-foreground" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
