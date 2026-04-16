@@ -87,7 +87,7 @@ const MovieDetailModal = ({ movie, open, onClose, onSelectMovie, isInWatchlist, 
           <div className="flex flex-wrap gap-2">
             {moodLabels.map(m => m && (
               <span key={m.id} className="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary">
-                {m.emoji} {m.label}
+                {m.label}
               </span>
             ))}
           </div>
