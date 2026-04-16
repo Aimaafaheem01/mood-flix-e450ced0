@@ -9,9 +9,11 @@ interface MovieRowProps {
   onMovieClick?: (movie: Movie) => void;
   isInWatchlist?: (movieId: number) => boolean;
   onToggleWatchlist?: (movieId: number) => void;
+  userRating?: number;
+  onRate?: (movieId: number, score: number) => void;
 }
 
-const MovieRow = ({ title, movies, onMovieClick, isInWatchlist, onToggleWatchlist }: MovieRowProps) => {
+const MovieRow = ({ title, movies, onMovieClick, isInWatchlist, onToggleWatchlist, onRate }: MovieRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: "left" | "right") => {
@@ -43,7 +45,7 @@ const MovieRow = ({ title, movies, onMovieClick, isInWatchlist, onToggleWatchlis
           style={{ scrollbarWidth: "none" }}
         >
           {movies.map((movie, i) => (
-            <MovieCard key={movie.id} movie={movie} index={i} onClick={onMovieClick} isInWatchlist={isInWatchlist?.(movie.id)} onToggleWatchlist={onToggleWatchlist} />
+            <MovieCard key={movie.id} movie={movie} index={i} onClick={onMovieClick} isInWatchlist={isInWatchlist?.(movie.id)} onToggleWatchlist={onToggleWatchlist} onRate={onRate} />
           ))}
         </div>
         <button
