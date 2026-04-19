@@ -5,9 +5,11 @@ const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
-const movieRoutes = require("./routes/movieRoutes");
-const moodRoutes  = require("./routes/moodRoutes");
-const reviewRoutes = require("./routes/reviewRoutes");
+const movieRoutes     = require("./routes/movieRoutes");
+const moodRoutes      = require("./routes/moodRoutes");
+const reviewRoutes    = require("./routes/reviewRoutes");
+const watchlistRoutes = require("./routes/watchlistRoutes"); // ← added
+const ratingRoutes    = require("./routes/ratingRoutes");    // ← added
 
 const app = express();
 
@@ -24,9 +26,11 @@ const limiter = rateLimit({
 app.use("/api", limiter);
 
 // ─── Routes ──────────────────────────────────────────────────
-app.use("/api/movies",  movieRoutes);
-app.use("/api/moods",   moodRoutes);
-app.use("/api/reviews", reviewRoutes);
+app.use("/api/movies",    movieRoutes);
+app.use("/api/moods",     moodRoutes);
+app.use("/api/reviews",   reviewRoutes);
+app.use("/api/watchlist", watchlistRoutes); // ← added
+app.use("/api/ratings",   ratingRoutes);    // ← added
 
 // ─── Health Check ─────────────────────────────────────────────
 app.get("/", (req, res) => {
