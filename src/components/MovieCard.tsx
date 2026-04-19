@@ -1,12 +1,17 @@
 import { motion } from "framer-motion";
-import { Star, Clock } from "lucide-react";
+import { Star, Clock, Heart } from "lucide-react";
 import { Movie } from "@/data/movies";
 import { posterMap } from "@/data/posters";
+import StarRating from "./StarRating";
 
 interface MovieCardProps {
   movie: Movie;
   index: number;
   onClick?: (movie: Movie) => void;
+  isInWatchlist?: boolean;
+  onToggleWatchlist?: (movieId: number) => void;
+  userRating?: number;
+  onRate?: (movieId: number, score: number) => void;
 }
 
 const colorPool = [
@@ -20,7 +25,7 @@ const colorPool = [
   "from-indigo-900/80 to-indigo-950/90",
 ];
 
-const MovieCard = ({ movie, index, onClick }: MovieCardProps) => {
+const MovieCard = ({ movie, index, onClick, isInWatchlist, onToggleWatchlist, userRating, onRate }: MovieCardProps) => {
   const gradient = colorPool[movie.id % colorPool.length];
   const poster = posterMap[movie.id];
 
@@ -29,9 +34,18 @@ const MovieCard = ({ movie, index, onClick }: MovieCardProps) => {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="card-netflix group min-w-[200px] w-[200px] sm:w-[220px] flex-shrink-0 cursor-pointer"
+      className="card-netflix group min-w-[200px] w-[200px] sm:w-[220px] flex-shrink-0 cursor-pointer relative"
       onClick={() => onClick?.(movie)}
     >
+      {/* Watchlist button */}
+      {onToggleWatchlist && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleWatchlist(movie.id); }}
+          className="absolute top-2 right-2 z-20 p-1.5 rounded-full bg-background/70 backdrop-blur-sm hover:bg-background/90 transition-colors"
+        >
+          <Heart className={`w-4 h-4 transition-colors ${isInWatchlist ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+        </button>
+      )}
       {/* Poster area */}
       <div className="relative aspect-[2/3] overflow-hidden">
         {poster ? (
@@ -67,6 +81,11 @@ const MovieCard = ({ movie, index, onClick }: MovieCardProps) => {
             {movie.duration}
           </span>
         </div>
+        {onRate && (
+          <div className="pt-1">
+            <StarRating rating={userRating ?? 0} onRate={(s) => onRate(movie.id, s)} size="sm" />
+          </div>
+        )}
         <div className="flex flex-wrap gap-1">
           {movie.genres.slice(0, 2).map((g) => (
             <span

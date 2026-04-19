@@ -1,16 +1,23 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Film, Sparkles, Search, X } from "lucide-react";
+import { Film, Sparkles, Search, X, Heart, TrendingUp } from "lucide-react";
 import MoodSelector from "@/components/MoodSelector";
 import MovieRow from "@/components/MovieRow";
 import MovieDetailModal from "@/components/MovieDetailModal";
 import MovieCard from "@/components/MovieCard";
 import { movies, moods, Mood, Movie } from "@/data/movies";
+import { useWatchlist } from "@/hooks/use-watchlist";
+import { useRatings } from "@/hooks/use-ratings";
+
+// Curated trending picks (high-rated fan favorites)
+const TRENDING_IDS = [5, 9, 12, 18, 24, 30, 35, 42, 1, 7];
 
 const Index = () => {
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [detailMovie, setDetailMovie] = useState<Movie | null>(null);
+  const { watchlist, toggle, isInWatchlist } = useWatchlist();
+  const { rate, getRating, ratedMovieIds } = useRatings();
 
   const filteredMovies = useMemo(() => {
     if (!selectedMood) return [];
@@ -27,11 +34,42 @@ const Index = () => {
     );
   }, [searchQuery]);
 
-  const isSearching = searchQuery.trim().length > 0;
+  const watchlistMovies = useMemo(
+    () => movies.filter((m) => watchlist.includes(m.id)),
+    [watchlist]
+  );
 
+  const trendingMovies = useMemo(
+    () => TRENDING_IDS.map((id) => movies.find((m) => m.id === id)).filter(Boolean) as Movie[],
+    []
+  );
+
+  // Personalized recommendations based on rated movies' moods
+  const recommendedMovies = useMemo(() => {
+    if (ratedMovieIds.length === 0) return [];
+    const ratedMovies = movies.filter((m) => ratedMovieIds.includes(m.id));
+    const highRated = ratedMovies.filter((m) => (getRating(m.id) ?? 0) >= 4);
+    if (highRated.length === 0) return [];
+
+    const moodCounts: Record<string, number> = {};
+    highRated.forEach((m) => m.moods.forEach((mood) => {
+      moodCounts[mood] = (moodCounts[mood] || 0) + 1;
+    }));
+
+    const topMoods = Object.entries(moodCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([mood]) => mood);
+
+    return movies
+      .filter((m) => !ratedMovieIds.includes(m.id) && m.moods.some((mood) => topMoods.includes(mood)))
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 12);
+  }, [ratedMovieIds, getRating]);
+
+  const isSearching = searchQuery.trim().length > 0;
   const selectedMoodData = moods.find((m) => m.id === selectedMood);
 
-  // Group by genre for multiple rows
   const genreGroups = useMemo(() => {
     const map = new Map<string, typeof filteredMovies>();
     filteredMovies.forEach((movie) => {
@@ -42,6 +80,13 @@ const Index = () => {
     });
     return Array.from(map.entries()).filter(([, m]) => m.length >= 2);
   }, [filteredMovies]);
+
+  const commonProps = {
+    isInWatchlist,
+    onToggleWatchlist: toggle,
+    userRating: undefined as number | undefined,
+    onRate: (movieId: number, score: number) => rate(movieId, score),
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,7 +100,6 @@ const Index = () => {
             </span>
           </div>
 
-          {/* Search Bar */}
           <div className="relative max-w-md w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
@@ -66,10 +110,7 @@ const Index = () => {
               className="w-full pl-9 pr-9 py-2 rounded-full bg-secondary text-foreground text-sm placeholder:text-muted-foreground border border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
             />
             {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
+              <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2">
                 <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
               </button>
             )}
@@ -81,7 +122,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Search Results */}
       {isSearching ? (
         <section className="py-10 px-4 sm:px-8">
           <div className="container mx-auto space-y-6">
@@ -91,7 +131,7 @@ const Index = () => {
             {searchResults.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {searchResults.map((movie, i) => (
-                  <MovieCard key={movie.id} movie={movie} index={i} onClick={setDetailMovie} />
+                  <MovieCard key={movie.id} movie={movie} index={i} onClick={setDetailMovie} isInWatchlist={isInWatchlist(movie.id)} onToggleWatchlist={toggle} userRating={getRating(movie.id)} onRate={rate} />
                 ))}
               </div>
             ) : (
@@ -101,7 +141,7 @@ const Index = () => {
         </section>
       ) : (
         <>
-          {/* Hero / Mood Selection */}
+          {/* Hero */}
           <section className="py-12 sm:py-20 px-4">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -115,11 +155,48 @@ const Index = () => {
                 Select your current mood and we'll recommend the perfect movies for you.
               </p>
             </motion.div>
-
             <MoodSelector selectedMood={selectedMood} onSelectMood={setSelectedMood} />
           </section>
 
-          {/* Results */}
+          {/* Trending Now */}
+          <section className="pb-10 px-4 sm:px-8">
+            <div className="container mx-auto">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                <h2 className="font-display text-3xl tracking-wide text-foreground">Trending Now</h2>
+              </div>
+              <MovieRow title="" movies={trendingMovies} onMovieClick={setDetailMovie} {...commonProps} />
+            </div>
+          </section>
+
+          {/* Personalized Recommendations */}
+          {recommendedMovies.length > 0 && (
+            <section className="pb-10 px-4 sm:px-8">
+              <div className="container mx-auto">
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-3xl tracking-wide text-foreground">Recommended For You</h2>
+                </div>
+                <MovieRow title="" movies={recommendedMovies} onMovieClick={setDetailMovie} {...commonProps} />
+              </div>
+            </section>
+          )}
+
+          {/* Watchlist */}
+          {watchlistMovies.length > 0 && (
+            <section className="pb-10 px-4 sm:px-8">
+              <div className="container mx-auto">
+                <div className="flex items-center gap-2 mb-1">
+                  <Heart className="w-5 h-5 text-primary fill-primary" />
+                  <h2 className="font-display text-3xl tracking-wide text-foreground">My Watchlist</h2>
+                  <span className="text-sm text-muted-foreground">({watchlistMovies.length})</span>
+                </div>
+                <MovieRow title="" movies={watchlistMovies} onMovieClick={setDetailMovie} {...commonProps} />
+              </div>
+            </section>
+          )}
+
+          {/* Mood Results */}
           <AnimatePresence mode="wait">
             {selectedMood && (
               <motion.section
@@ -133,22 +210,18 @@ const Index = () => {
                 <div className="flex items-center gap-3 container mx-auto">
                   <Sparkles className="w-5 h-5 text-primary" />
                   <h2 className="font-display text-3xl tracking-wide text-foreground">
-                    {selectedMoodData?.emoji} {selectedMoodData?.label} Picks
+                    {selectedMoodData?.label} Picks
                   </h2>
-                  <span className="text-sm text-muted-foreground">
-                    ({filteredMovies.length} movies)
-                  </span>
+                  <span className="text-sm text-muted-foreground">({filteredMovies.length} movies)</span>
                 </div>
 
-                {/* Top picks row */}
                 <div className="container mx-auto">
-                  <MovieRow title="Top Picks For You" movies={filteredMovies} onMovieClick={setDetailMovie} />
+                  <MovieRow title="Top Picks For You" movies={filteredMovies} onMovieClick={setDetailMovie} {...commonProps} />
                 </div>
 
-                {/* Genre rows */}
                 <div className="container mx-auto space-y-8">
                   {genreGroups.map(([genre, genreMovies]) => (
-                    <MovieRow key={genre} title={genre} movies={genreMovies} onMovieClick={setDetailMovie} />
+                    <MovieRow key={genre} title={genre} movies={genreMovies} onMovieClick={setDetailMovie} {...commonProps} />
                   ))}
                 </div>
               </motion.section>
@@ -157,19 +230,19 @@ const Index = () => {
         </>
       )}
 
-      {/* Movie Detail Modal */}
       <MovieDetailModal
         movie={detailMovie}
         open={!!detailMovie}
         onClose={() => setDetailMovie(null)}
         onSelectMovie={setDetailMovie}
+        isInWatchlist={detailMovie ? isInWatchlist(detailMovie.id) : false}
+        onToggleWatchlist={toggle}
+        userRating={detailMovie ? getRating(detailMovie.id) : 0}
+        onRate={rate}
       />
 
-      {/* Footer */}
       <footer className="border-t border-border py-6 text-center">
-        <p className="text-xs text-muted-foreground">
-          MOODFLIX — Your mood, your movie.
-        </p>
+        <p className="text-xs text-muted-foreground">MOODFLIX — Your mood, your movie.</p>
       </footer>
     </div>
   );

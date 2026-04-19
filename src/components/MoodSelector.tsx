@@ -26,7 +26,7 @@ const MoodSelector = ({ selectedMood, onSelectMood }: MoodSelectorProps) => {
                 : "border-border hover:border-muted-foreground/30"
             }`}
           >
-            <span className="text-3xl">{mood.emoji}</span>
+            {mood.emoji && <span className="text-3xl">{mood.emoji}</span>}
             <span className="font-medium text-sm tracking-wide text-foreground">
               {mood.label}
             </span>
