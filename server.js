@@ -40,7 +40,7 @@ app.use((req, res) => {
 
 // ─── Global Error Handler ─────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.message);
+  console.error(" Error:", err.message);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || "Internal Server Error",
@@ -53,10 +53,10 @@ const PORT = process.env.PORT || 5000;
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("✅ MongoDB Connected");
-    app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+    console.log("MongoDB Connected");
+    app.listen(PORT, () => console.log(` Server running on http://localhost:${PORT}`));
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection failed:", err.message);
+    console.error(" MongoDB connection failed:", err.message);
     process.exit(1);
   });
