@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Star, Clock, X, Heart } from "lucide-react";
-import { Movie, movies, moods } from "@/data/movies";
+import { Star, Clock, X, Heart, Play, Loader2 } from "lucide-react";
+import { Movie, movies, moods, getMovieLanguage } from "@/data/movies";
 import { posterMap } from "@/data/posters";
+import { supabase } from "@/integrations/supabase/client";
 import StarRating from "./StarRating";
 
 interface MovieDetailModalProps {
@@ -16,10 +18,49 @@ interface MovieDetailModalProps {
 }
 
 const MovieDetailModal = ({ movie, open, onClose, onSelectMovie, isInWatchlist, onToggleWatchlist, userRating, onRate }: MovieDetailModalProps) => {
+  const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const [trailerLoading, setTrailerLoading] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [trailerError, setTrailerError] = useState<string | null>(null);
+
+  // Reset trailer when movie changes
+  useEffect(() => {
+    setTrailerKey(null);
+    setShowTrailer(false);
+    setTrailerError(null);
+  }, [movie?.id]);
+
+  const fetchTrailer = async () => {
+    if (!movie || trailerKey || trailerLoading) {
+      if (trailerKey) setShowTrailer(true);
+      return;
+    }
+    setTrailerLoading(true);
+    setTrailerError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("get-trailer", {
+        body: { title: movie.title, year: movie.year },
+      });
+      if (error) throw error;
+      if (data?.trailerKey) {
+        setTrailerKey(data.trailerKey);
+        setShowTrailer(true);
+      } else {
+        setTrailerError("Trailer not found");
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load trailer";
+      setTrailerError(msg);
+    } finally {
+      setTrailerLoading(false);
+    }
+  };
+
   if (!movie) return null;
 
   const poster = posterMap[movie.id];
   const moodLabels = movie.moods.map(m => moods.find(md => md.id === m)).filter(Boolean);
+  const language = getMovieLanguage(movie);
 
   // Find similar movies (share at least one mood, exclude current)
   const similar = movies
@@ -31,12 +72,41 @@ const MovieDetailModal = ({ movie, open, onClose, onSelectMovie, isInWatchlist, 
       <DialogContent className="max-w-3xl p-0 overflow-hidden bg-card border-border max-h-[90vh] overflow-y-auto">
         {/* Hero */}
         <div className="relative h-72 sm:h-96">
-          {poster ? (
+          {showTrailer && trailerKey ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0`}
+              title={`${movie.title} trailer`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full"
+            />
+          ) : poster ? (
             <img src={poster} alt={movie.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary/30 to-background" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+          {!showTrailer && (
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+          )}
+
+          {/* Play trailer button overlay */}
+          {!showTrailer && (
+            <button
+              onClick={fetchTrailer}
+              disabled={trailerLoading}
+              className="absolute inset-0 flex items-center justify-center group/play z-10"
+              aria-label="Play trailer"
+            >
+              <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center group-hover/play:scale-110 group-hover/play:bg-primary transition-all shadow-lg">
+                {trailerLoading ? (
+                  <Loader2 className="w-7 h-7 text-primary-foreground animate-spin" />
+                ) : (
+                  <Play className="w-7 h-7 text-primary-foreground ml-1" fill="currentColor" />
+                )}
+              </span>
+            </button>
+          )}
+
           <div className="absolute top-4 right-4 flex gap-2 z-20">
             {onToggleWatchlist && movie && (
               <button
@@ -61,7 +131,7 @@ const MovieDetailModal = ({ movie, open, onClose, onSelectMovie, isInWatchlist, 
             <h2 className="font-display text-4xl sm:text-5xl tracking-wide text-foreground">
               {movie.title}
             </h2>
-            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1 text-yellow-400 font-semibold">
                 <Star className="w-4 h-4 fill-current" />
                 {movie.rating}
@@ -71,8 +141,15 @@ const MovieDetailModal = ({ movie, open, onClose, onSelectMovie, isInWatchlist, 
                 {movie.duration}
               </span>
               <span>{movie.year}</span>
+              <span className="px-2 py-0.5 rounded bg-secondary text-secondary-foreground text-xs">
+                {language}
+              </span>
             </div>
           </div>
+
+          {trailerError && (
+            <p className="text-xs text-destructive">{trailerError}</p>
+          )}
 
           {/* Genres */}
           <div className="flex flex-wrap gap-2">

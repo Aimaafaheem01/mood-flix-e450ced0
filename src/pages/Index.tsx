@@ -5,7 +5,7 @@ import MoodSelector from "@/components/MoodSelector";
 import MovieRow from "@/components/MovieRow";
 import MovieDetailModal from "@/components/MovieDetailModal";
 import MovieCard from "@/components/MovieCard";
-import { movies, moods, Mood, Movie } from "@/data/movies";
+import { movies, moods, Mood, Movie, LANGUAGES, Language, getMovieLanguage } from "@/data/movies";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useRatings } from "@/hooks/use-ratings";
 
@@ -15,33 +15,40 @@ const TRENDING_IDS = [5, 9, 12, 18, 24, 30, 35, 42, 1, 7];
 const Index = () => {
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState<Language | "all">("all");
   const [detailMovie, setDetailMovie] = useState<Movie | null>(null);
   const { watchlist, toggle, isInWatchlist } = useWatchlist();
   const { rate, getRating, ratedMovieIds } = useRatings();
 
+  // Apply language filter to any movie list
+  const byLanguage = (list: Movie[]) =>
+    selectedLanguage === "all" ? list : list.filter((m) => getMovieLanguage(m) === selectedLanguage);
+
   const filteredMovies = useMemo(() => {
     if (!selectedMood) return [];
-    return movies.filter((m) => m.moods.includes(selectedMood));
-  }, [selectedMood]);
+    return byLanguage(movies.filter((m) => m.moods.includes(selectedMood)));
+  }, [selectedMood, selectedLanguage]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase();
-    return movies.filter(
-      (m) =>
-        m.title.toLowerCase().includes(q) ||
-        m.genres.some((g) => g.toLowerCase().includes(q))
+    return byLanguage(
+      movies.filter(
+        (m) =>
+          m.title.toLowerCase().includes(q) ||
+          m.genres.some((g) => g.toLowerCase().includes(q))
+      )
     );
-  }, [searchQuery]);
+  }, [searchQuery, selectedLanguage]);
 
   const watchlistMovies = useMemo(
-    () => movies.filter((m) => watchlist.includes(m.id)),
-    [watchlist]
+    () => byLanguage(movies.filter((m) => watchlist.includes(m.id))),
+    [watchlist, selectedLanguage]
   );
 
   const trendingMovies = useMemo(
-    () => TRENDING_IDS.map((id) => movies.find((m) => m.id === id)).filter(Boolean) as Movie[],
-    []
+    () => byLanguage(TRENDING_IDS.map((id) => movies.find((m) => m.id === id)).filter(Boolean) as Movie[]),
+    [selectedLanguage]
   );
 
   // Personalized recommendations based on rated movies' moods
@@ -116,9 +123,17 @@ const Index = () => {
             )}
           </div>
 
-          <p className="text-xs text-muted-foreground hidden lg:block flex-shrink-0">
-            Pick your mood. Get the perfect movie.
-          </p>
+          <select
+            value={selectedLanguage}
+            onChange={(e) => setSelectedLanguage(e.target.value as Language | "all")}
+            className="flex-shrink-0 px-3 py-2 rounded-full bg-secondary text-foreground text-sm border border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors cursor-pointer"
+            aria-label="Filter by language"
+          >
+            <option value="all">All Languages</option>
+            {LANGUAGES.map((lang) => (
+              <option key={lang} value={lang}>{lang}</option>
+            ))}
+          </select>
         </div>
       </header>
 

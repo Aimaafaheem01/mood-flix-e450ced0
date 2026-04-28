@@ -1,5 +1,15 @@
 export type Mood = 'happy' | 'sad' | 'thrilling' | 'romantic' | 'chill' | 'mysterious' | 'inspiring' | 'scary';
 
+export type Language = 'English' | 'French' | 'Japanese' | 'Spanish' | 'Korean' | 'Hindi' | 'Italian' | 'German';
+
+export const LANGUAGES: Language[] = ['English', 'French', 'Japanese', 'Spanish', 'Korean', 'Hindi', 'Italian', 'German'];
+
+// Movies whose original language is not English. Everything else defaults to English.
+const NON_ENGLISH_MOVIES: Record<number, Language> = {
+  2: 'French',   // Amélie
+  38: 'Japanese', // My Neighbor Totoro
+};
+
 export interface Movie {
   id: number;
   tmdbId: number;
@@ -11,6 +21,11 @@ export interface Movie {
   description: string;
   poster: string;
   moods: Mood[];
+  language?: Language;
+}
+
+export function getMovieLanguage(movie: Movie): Language {
+  return movie.language ?? NON_ENGLISH_MOVIES[movie.id] ?? 'English';
 }
 
 export const moods: { id: Mood; label: string; emoji: string; gradient: string }[] = [
