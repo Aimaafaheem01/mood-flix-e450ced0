@@ -26,27 +26,29 @@ const Index = () => {
 
   const filteredMovies = useMemo(() => {
     if (!selectedMood) return [];
-    return movies.filter((m) => m.moods.includes(selectedMood));
-  }, [selectedMood]);
+    return byLanguage(movies.filter((m) => m.moods.includes(selectedMood)));
+  }, [selectedMood, selectedLanguage]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase();
-    return movies.filter(
-      (m) =>
-        m.title.toLowerCase().includes(q) ||
-        m.genres.some((g) => g.toLowerCase().includes(q))
+    return byLanguage(
+      movies.filter(
+        (m) =>
+          m.title.toLowerCase().includes(q) ||
+          m.genres.some((g) => g.toLowerCase().includes(q))
+      )
     );
-  }, [searchQuery]);
+  }, [searchQuery, selectedLanguage]);
 
   const watchlistMovies = useMemo(
-    () => movies.filter((m) => watchlist.includes(m.id)),
-    [watchlist]
+    () => byLanguage(movies.filter((m) => watchlist.includes(m.id))),
+    [watchlist, selectedLanguage]
   );
 
   const trendingMovies = useMemo(
-    () => TRENDING_IDS.map((id) => movies.find((m) => m.id === id)).filter(Boolean) as Movie[],
-    []
+    () => byLanguage(TRENDING_IDS.map((id) => movies.find((m) => m.id === id)).filter(Boolean) as Movie[]),
+    [selectedLanguage]
   );
 
   // Personalized recommendations based on rated movies' moods
