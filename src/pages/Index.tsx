@@ -123,9 +123,17 @@ const Index = () => {
             )}
           </div>
 
-          <p className="text-xs text-muted-foreground hidden lg:block flex-shrink-0">
-            Pick your mood. Get the perfect movie.
-          </p>
+          <select
+            value={selectedLanguage}
+            onChange={(e) => setSelectedLanguage(e.target.value as Language | "all")}
+            className="flex-shrink-0 px-3 py-2 rounded-full bg-secondary text-foreground text-sm border border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors cursor-pointer"
+            aria-label="Filter by language"
+          >
+            <option value="all">All Languages</option>
+            {LANGUAGES.map((lang) => (
+              <option key={lang} value={lang}>{lang}</option>
+            ))}
+          </select>
         </div>
       </header>
 
