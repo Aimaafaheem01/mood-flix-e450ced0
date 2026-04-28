@@ -5,7 +5,7 @@ import MoodSelector from "@/components/MoodSelector";
 import MovieRow from "@/components/MovieRow";
 import MovieDetailModal from "@/components/MovieDetailModal";
 import MovieCard from "@/components/MovieCard";
-import { movies, moods, Mood, Movie } from "@/data/movies";
+import { movies, moods, Mood, Movie, LANGUAGES, Language, getMovieLanguage } from "@/data/movies";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useRatings } from "@/hooks/use-ratings";
 
