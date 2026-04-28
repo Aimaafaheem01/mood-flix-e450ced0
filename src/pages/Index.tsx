@@ -15,9 +15,14 @@ const TRENDING_IDS = [5, 9, 12, 18, 24, 30, 35, 42, 1, 7];
 const Index = () => {
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState<Language | "all">("all");
   const [detailMovie, setDetailMovie] = useState<Movie | null>(null);
   const { watchlist, toggle, isInWatchlist } = useWatchlist();
   const { rate, getRating, ratedMovieIds } = useRatings();
+
+  // Apply language filter to any movie list
+  const byLanguage = (list: Movie[]) =>
+    selectedLanguage === "all" ? list : list.filter((m) => getMovieLanguage(m) === selectedLanguage);
 
   const filteredMovies = useMemo(() => {
     if (!selectedMood) return [];
