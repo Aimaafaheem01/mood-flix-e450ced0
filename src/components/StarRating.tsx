@@ -16,7 +16,7 @@ const StarRating = ({ rating, onRate, size = "sm" }: StarRatingProps) => {
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
-          onMouseEnter={() => setHover(star)``}
+          onMouseEnter={() => setHover(star)}
           onMouseLeave={() => setHover(0)}
           onClick={(e) => {
             e.stopPropagation();
